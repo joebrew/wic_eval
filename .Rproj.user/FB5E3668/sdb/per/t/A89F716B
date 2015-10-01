@@ -1,0 +1,18 @@
+{
+    "contents" : "#####\n# DATA DOWNLOAD DIRECTIONS\n#####\n# NOT USING -----------------\n# SHAREPOINT DATA:\n# http://def.sharepoint.doh.ad.state.fl.us/Family/WIC/EBT/default.aspx?RootFolder=%2fFamily%2fWIC%2fEBT%2fShared%20Documents%2fIndicators%20%2d%20Detail%20Information&View=%7b18FCF710%2dD9AA%2d4187%2dA315%2d791587DAE18E%7d\n# --- breastfeeding\n# ------\n# ---prenatal entry into WIC in first semester\n# ------ enrolees by month or quarter\n# USING ---------------------\n# http://dohiws/\n# --- Divisions and Bureaus / Divisions of Community Health Promotion\n# --- Bureau of Women, Infants and Children Program Services\n# --- Internal\n# --- Indicators\n# ------ Participation : Copy of FFY2015PARTICIPATION\n# ------ Breastfeeding - Percent of WIC Infants Ever Breastfed : Percent_Of_WIC_Infants_And_Children_Ever_Breastfed\n# ------ Breastfeeding - Percent of Breastfed Infants in WIC : Percent_Of_Breastfed_Infants_In_WIC\n# ------ Breastfeeding - Infants Breastfed for 26 weeks : Infants_Breastfed_For_26_Weeks\n# ------ Breastfeeding - Infants Fully Breastfed for 26 weeks : Infants_Fully_Breastfed_For_26_Weeks\n# ------ 1st trimester entry into WIC-All Prenatal Enrollees : First_Trimester_Entry_Into_WIC-All_Enrollees\n# ------ 1st Trimester Entry Into WIC by Quarter or Month : First_Trimester_Entry_Into_WIC_By_Time_Period\n# ------ Nutrition Education Contacts-High Risk : Nutrition_Education_Contacts_For_High_Risk_Clients\n# ------ Nutrition Education Contacts-Low Risk : Nutrition_Education_Contacts_For_Low_Risk_Clients\n# ------ Overweight and Obese Children : Overweight_And_Obese_Children\n# ------ Healthy Weight : Healthy_Weight\n#####\n\n#####\n# LIBRARIES\n#####\nlibrary(readr)\nlibrary(dplyr)\nlibrary(readxl)\nlibrary(tidyr)\n\n\n#####\n# DATA READ IN\n#####\n\n### PARTICIPATION\nparticipation <- read_excel('data/FFY2015PARTICIPATION.xls', header = FALSE)\n# Extract names\ntemp <- apply(participation, 2, function(x){paste0(x[1], x[2], format(as.Date(x[3]), '%Y-%m-%d'), x[4])})\n\n# DEFINE WHICH FILES TO WORK WITH\nfiles <- c(participation = 'FFY2015PARTICIPATION',\n           ever_breast = 'Percent_Of_WIC_Infants_And_Children_Ever_Breastfed',\n           breast_wic = 'Percent_Of_Breastfed_Infants_In_WIC',\n           breast_26 = 'Infants_Breastfed_For_26_Weeks',\n           breast_26_full = 'Infants_Fully_Breastfed_For_26_Weeks',\n           first_tri = 'First_Trimester_Entry_Into_WIC-All_Enrollees',\n           first_tri_ts = 'First_Trimester_Entry_Into_WIC_By_Time_Period',\n           nutrition_contacts_high_risk = 'Nutrition_Education_Contacts_For_High_Risk_Clients',\n           nutrition_contacts_low_risk = 'Nutrition_Education_Contacts_For_Low_Risk_Clients')\n\n# Define how many skips per file\nskips <- c(2, 1, 1, 3, 3, 1, 3, 2, 1)\n\n\n# Read in each file\nfor (i in 1:length(files)){\n  if(paste0('', files[i], '.xlsx') %in% dir('data')){\n    val <- paste0('data/', files[i], '.xlsx')\n  } else {\n    val <- paste0('data/', files[i], '.xls')\n  }\n  assign(x = names(files)[i],\n         value = read_excel(val, skip = skips[i]))\n  print(i)\n}",
+    "created" : 1443725565172.000,
+    "dirty" : false,
+    "encoding" : "ISO8859-1",
+    "folds" : "",
+    "hash" : "2019883340",
+    "id" : "A89F716B",
+    "lastKnownWriteTime" : 1443728741,
+    "path" : "~/wic_eval/read_in.R",
+    "project_path" : "read_in.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

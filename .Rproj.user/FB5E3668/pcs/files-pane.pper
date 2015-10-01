@@ -1,0 +1,9 @@
+{
+    "path" : "~/wic_eval/data",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}
