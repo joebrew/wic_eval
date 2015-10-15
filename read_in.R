@@ -26,16 +26,23 @@
 # ------ Healthy Weight : Healthy_Weight
 #####
 
+###### BEFORE STARTING
+# MANUAL INSTRUCTIONS for FFY2015PARTICIPATION.xlsx
+# First resave the FFY2015PARTICIPATION.xls as an xlsx file. 
+# Manually remove column CJ, rows 61-85 because they are not associated with the data 
+
 #####
 # LIBRARIES
 #####
+library(ggthemes)
 library(readr)
-library(dplyr)
 library(plyr)
+library(dplyr)
 library(readxl)
 library(tidyr)
 library(xlsx)
 library(splitstackshape)
+library(ggplot2)
 
 #####
 # DATA READ IN
@@ -61,6 +68,10 @@ clean_everbf1 <- function(x){
   x <- x[2:nrow(x), ]
   # drop state totals 
   x <- x[x$agency != 'State',]
+  #Make as numeric 
+  x$ever_bf <-as.numeric(x$ever_bf)
+  x$all_infants_children <-as.numeric(x$all_infants_children)
+  
   
   # return x
   return(x)
@@ -83,6 +94,9 @@ clean_everbf2 <- function(x){
   names(x) <- c("agency","site", "ever_bf", "all_infants_children")
   # Drop the original row that just had the column names 
   x <- x[2:nrow(x), ]
+  #Make as numeric 
+  x$ever_bf <-as.numeric(x$ever_bf)
+  x$all_infants_children <-as.numeric(x$all_infants_children)
   
   # return x
   return(x)
@@ -92,14 +106,29 @@ clean_everbf2 <- function(x){
 # apply function to ever_bf2
 ever_bf2 <- clean_everbf2(ever_bf2)
 
-# apply function to ever_bf3
+# Create function to clean ever_bf3
+clean_everbf3 <- function(x){
+  # subset x by removing columns that are filled entirely with NAs
+  x <- x[,colSums(is.na(x))<nrow(x)]
+  # subset x again by removing rows that are entirely filled with NAs
+  x <- x[complete.cases(x),]
+  # drop last column
+  x <- x[,1:(ncol(x) - 1)]
+  # rename x
+  names(x) <- c("agency_number","agency", "ever_bf", "all_infants_children")
+  # Drop the original row that just had the column names 
+  x <- x[2:nrow(x), ]
+  # drop state totals 
+  x <- x[x$agency != 'State',]
+  #Make as numeric 
+  x$ever_bf <-as.numeric(x$ever_bf)
+  x$all_infants_children <-as.numeric(x$all_infants_children)
+  
+}
 ever_bf3<- clean_everbf1(ever_bf3)
 
-##### Read in all 5 sheets from FFY2015PARTICIPATION 
-# MANUAL INSTRUCTIONS::: 
-# First resave the FFY2015PARTICIPATION.xls as an xlsx file. 
-# Then remove the previous xls file 
-# Manually remove column CJ, rows 61-85 because they are not associated with the data 
+##### Read in from FFY2015PARTICIPATION 
+
 ffy_2015_1 <- read_excel('data/FFY2015PARTICIPATION.xlsx', 1, col_names = FALSE)
 ffy_2015_2 <- read_excel('data/FFY2015PARTICIPATION.xlsx', 2, col_names = FALSE)
 
@@ -127,6 +156,7 @@ clean_ffy_2015_1 <- function(x){
   # Make participation and eligible numeric
   x$participation <- as.numeric(x$participation)
   x$eligible <- as.numeric(x$eligible)
+  
   return(x)
 }
   
@@ -289,6 +319,19 @@ x <- x[, c("county", "year", "quarter", "class", "value")]
 x <- x[x$county != 'State',]
 # remove if "As of"
 x <- x[!grepl("As of", x$county),]
+# clean county column 
+x$county <- gsub("\\s+", "", x$county)
+# make as numeric
+x$value <- as.numeric(x$value)
+# Keep only percent 
+x <- x[x$class == 'Percent clients certified in 1st trimester',]
+# recode 14 as 2014
+x$year <- ifelse(x$year == '14', '2014', x$year)
+# Combine year and quarter into a date object 
+x$time <- paste0(x$year,  "-0", x$quarter)
+x$time <- paste0(x$time, "-01")
+# change to date time 
+x$time <- as.Date(x$time, format = '%Y-%m-%d')
   
   return(x)
 }
@@ -355,7 +398,7 @@ clean_weight2 <- function(x){
 }
 
 
-healthy_weight2 <- clean_weight(healthy_weight2)
+healthy_weight2 <- clean_weight2(healthy_weight2)
 
 
 ##### Read in all 4 sheets from Infants Breastfed for 26 weeks june 2015.xlsx 
@@ -378,6 +421,9 @@ clean_infants_june1 <- function(x){
   x <- x[(which(x$agency_name == 'Alachua')):nrow(x),]
   # remove state 
   x <- x[x$agency_name != 'State',]
+  # make numeric 
+  x$bf_infants <- as.numeric(x$bf_infants)
+  x$all_infants <- as.numeric(x$all_infants)
   
   return(x)
 }
@@ -456,6 +502,8 @@ clean_infants1 <- function(x){
   x$date <- as.Date(gsub("date", "", x$date), format = '%Y-%m-%d')
   # remove state 
   x <- x[x$agency_name != 'State',]
+  # make numeric
+  x$value <- as.numeric(x$value)
   
   return(x)
   
@@ -516,6 +564,9 @@ clean_full1 <- function(x){
   x <- x[which(x$agency_name == 'Alachua'):nrow(x),]
   # drop state 
   x <- x[which(x$agency_name != 'State'),]
+  # Make numeric 
+  x$full_bf <- as.numeric(x$full_bf)
+  x$ever_bf <- as.numeric(x$ever_bf)
   
   return(x)
 }
@@ -595,6 +646,8 @@ clean_full_date1 <- function(x){
   x$date <- as.Date(gsub("date", "", x$date), format = '%Y-%m-%d')
   # drop state 
   x <- x[which(x$agency_name != 'State'),]
+  # Make numeric 
+  x$per_full_bf<- as.numeric(x$per_full_bf)
   
   return(x)
 }
@@ -652,6 +705,11 @@ clean_hisp1 <- function(x){
   x <- x[2:nrow(x),]
   # drop row with name equal to state 
   x <- x[x$agency_name != 'State',]
+  # make numeric 
+  x$ever_bf <- as.numeric(x$ever_bf)
+  x$all <- as.numeric(x$all)
+  
+  return(x)
 }
 
 # apply function to non_hisp1
@@ -1072,8 +1130,9 @@ clean_per1 <- function(x){
   # Get first column name
   names(x) <- c('agency_name', 'currently_bf', 'total_infants')
   x <- x[which(x$agency_name != 'State'),]
-  
-  
+  # Make as numeric
+  x$currently_bf <- as.numeric(x$currently_bf)
+  x$total_infants <- as.numeric(x$total_infants)  
   return(x)
 
 }
@@ -1157,6 +1216,9 @@ clean_bf1 <- function(x){
   x$date <- gsub("date","", x$date)
   # drop state total from x 
   x <- x[which(x$agency_name != 'State'),]
+  # make into date object
+  x$date <- as.Date(x$date, format = '%Y-%m-%d')
+  
   
   return(x)
   
@@ -1228,6 +1290,9 @@ clean_entry1 <- function(x){
   x <- x[2:nrow(x),]
   # drop state total from x 
   x <- x[which(x$agency_name != 'State'),]
+  # make as numeric
+  x$all_prenatals <- as.numeric(x$all_prenatals)
+  x$certified_first_tri <- as.numeric(x$certified_first_tri)
   
   return(x)
   
@@ -1253,7 +1318,6 @@ clean_entry2 <- function(x){
   x <- x[2:nrow(x),]
   
   return(x)
-  
 }
 
 # apply function to pre_entry2
@@ -1261,56 +1325,3 @@ pre_entry2 <- clean_entry2(pre_entry2)
 
 # apply clean_entry1 to pre_entry3
 pre_entry3 <- clean_entry1(pre_entry3)
-
-
-##############################################################################################################
-# Analysis
-##############################################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
