@@ -36,8 +36,8 @@ source('helpers.R')
 # ffy_2015 - participation in WIC by agency/county *
 # first_tri_enroll -Percent of All WIC Prenatal Enrollees Certified for WIC during the First Trimester *
 # first_tri_time1 - Percent of Prenatal Women Enrolling in WIC in the First Trimester and Certified during* Reporting Period
-# healthy_weight - Percent of WIC children between 2 - 5 years of age having a Healthy Weight
-# high_risk - Nutrition Education Report for High Risk Clients having Certification End Date within Target Period
+# healthy_weight - Percent of WIC children between 2 - 5 years of age having a Healthy Weight *
+# high_risk - Nutrition Education Report for High Risk Clients having Certification End Date within Target Period *
 # infants_fed -  Infants  at least 26 weeks old  Breastfed for at least 26 weeks by Agency  *
 # infans_fed_june -  Ever Breastfed Infants  at least 6 Months of age and Breastfed for at least 26 weeks by * 
 # infants_fed_full -  Infants  at least 26 weeks old  Fully Breastfed for at least 26 weeks by Agency *  
@@ -77,7 +77,7 @@ ffy_2015_1 <- arrange(ffy_2015_1, -percent)
 
 
 # create indicator for alachua 
-ffy_2015_1$County <- ifelse(ffy_2015_1$agency == '*Alachua', 'Alachua', 'Not Alachua')
+ffy_2015_1$County <- ifelse(ffy_2015_1$agency == '*Alachua', 'Alachua', 'Other Counties')
 
 # group by column indicator
 temp <- ffy_2015_1 %>%
@@ -303,7 +303,7 @@ multiplot(bar, hist, cols = 2)
 ```{r, fig.cap= 'Percent of infants and children under 24 months ever breasted by WIC moms by agency (2014 - 2015.'}
 # Through time, use percent_ever 
 # First create and indicator for Alachua and group by indicator 
-percent_ever1$County <- ifelse(percent_ever1$agency_name == 'ALACHUA', 'Alachua', 'Not Alachua')
+percent_ever1$County <- ifelse(percent_ever1$agency_name == 'ALACHUA', 'Alachua', 'Other Counties')
 
 temp <- percent_ever1 %>%
   group_by(County, date) %>%
@@ -368,7 +368,7 @@ multiplot(bar, hist, cols = 2)
 # VISUALIZE INFANTS AT LEAST 26 WEEKS OLD WHO HAVE BF FOR AT LEAST 26 WEEKS OVER TIME using infants_fed1
 
 # First create and indicator for Alachua and group by indicator 
-infants_fed1$County <- ifelse(infants_fed1$agency_name == 'Alachua', 'Alachua', 'Not Alachua')
+infants_fed1$County <- ifelse(infants_fed1$agency_name == 'Alachua', 'Alachua', 'Other Counties')
 
 temp <- infants_fed1 %>%
   group_by(County, date) %>%
@@ -433,7 +433,7 @@ multiplot(bar, hist, cols = 2)
 ```{r, fig.cap= 'Percent of infants at least 6 months of age who have fully breasfed for at least 26 weeks (2014-2015)'}
 
 # VISUALIZE INFANTS AT LEAST 26 WEEKS OLD FULLY BREASTFED FOR AT LEAST 26 WEEKS BY AGENCY 
-infants_full2$County <- ifelse(infants_full2$agency_name == 'Alachua', 'Alachua', 'Not Alachua')
+infants_full2$County <- ifelse(infants_full2$agency_name == 'Alachua', 'Alachua', 'Other Counties')
 
 temp <- infants_full2 %>%
   group_by(County, date) %>%
@@ -451,7 +451,7 @@ ggplot(data = temp, aes(date, per_avg, group = County, color = County)) +
 
 # non_hisp - Non-Hispanic Black Infants  and Children < 24 mos. old of WIC Moms Ever Breastfed by Agency
 
-```{r, fig.cap= 'Right:Percent of Non-Hispanic Black infants and children less than 24 months old that were ever breastfed by WIC moms. Left: Distribution of percent of Non-Hispanic Black infants and children less than 24 months old that were ever breastfed by WIC moms. Both as of June 2015.}
+```{r, fig.cap= 'Right:Percent of Non-Hispanic Black infants and children less than 24 months old that were ever breastfed by WIC moms. Left: Distribution of percent of Non-Hispanic Black infants and children less than 24 months old that were ever breastfed by WIC moms. Both as of June 2015.'}
 
 # VISUALIZE PERCENT OF NON HISPANIC BLACK INFANTS AND CHILDREND UNDER 2 YEARS EVER BF
 
@@ -494,3 +494,256 @@ multiplot(bar, hist, cols = 2)
 
 ```
 
+
+# Healthy Weight and Obesity
+
+# healthy_weight - Percent of WIC children between 2 - 5 years of age having a Healthy Weight
+
+
+```{r, fig.cap= 'Percent of WIC children between ages 2-5 having a healthy weight (2014-2015)'}
+# VISUALIZE PERCENT OF WIC CHILDREN 2-5 WITH HEALTHY WEIGHT 
+healthy_weight1$County <- ifelse(healthy_weight1$agency == 'Alachua', 'Alachua', 'Other Counties')
+
+temp <- healthy_weight1 %>%
+  group_by(County, date) %>%
+  summarise(per_avg = mean(value, na.rm = T))
+
+ggplot(data = temp, aes(date, per_avg, group = County, color = County)) +  
+  scale_colour_brewer(palette = 'Set1') +
+  geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
+  ggtitle('') +
+  ylim(50, 80) + xlab('Date') + ylab('Percent') + 
+  theme(axis.text.x  = element_text(size = 10, colour = 'black'),
+        axis.text.y = element_text(size = 12, colour = 'black'),
+        axis.title.y = element_text(size = 12)) + theme_hc()
+
+
+```
+
+
+```{r, fig.cap= 'Right: Percent of children 2 years or younger that are obese by county. Left: Percent of children 2 years or younger that are overweight by county.'}
+over_obese1$County <- ifelse(over_obese1$county == 'ALACHUA', 'Alachua', 'Other Counties')
+
+temp <- over_obese1 %>%
+  group_by(County, time, weight_status) %>%
+  summarise(per_avg = mean(percent, na.rm = T))
+
+# Subset by just obese and plot
+obese <- temp[temp$weight_status == 'obese',]
+overweight <- temp[temp$weight_status == 'overweight',]
+
+a <- ggplot(data = obese, aes(time, per_avg, group = County, color = County)) +  
+  scale_colour_brewer(palette = 'Set1') +
+  geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
+  ggtitle('') +
+  ylim(0, 50) + xlab('') + ylab('Percent') + 
+  theme(axis.text.x  = element_text(size = 7, colour = 'black'),
+        axis.text.y = element_text(size = 12, colour = 'black'),
+        axis.title.y = element_text(size = 12)) + theme_hc()
+
+b <- ggplot(data = overweight, aes(time, per_avg, group = County, color = County)) +  
+  scale_colour_brewer(palette = 'Set1') +
+  geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
+  ggtitle('') +
+  ylim(0, 50) + xlab('') + ylab('Percent') + 
+  theme(axis.text.x  = element_text(size = 8, colour = 'black'),
+        axis.text.y = element_text(size = 12, colour = 'black'),
+        axis.title.y = element_text(size = 12)) + theme_hc()
+
+# plot side by side
+multiplot(a, b, cols = 2)
+
+```
+
+
+```{r, fig.cap= 'Right: Number of 2 or more high risk nurtrition education contacts. Left: Number of 2 or more Issuances.'}
+
+# make county indicator 
+high_risk3$County <- ifelse(high_risk3$agency_name == 'ALACHUA', 'Alachua', 'Other Counties')
+
+# subset high_risk into 2 NE contacts and issuances 
+contacts <- high_risk3[high_risk3$class == '2 or more HR NE Contacts',]
+issuance <- high_risk3[high_risk3$class == '2 or more Issuances',]
+
+# group by County for each one 
+temp_contacts <- contacts %>%
+  group_by(County, time) %>%
+  summarise(amount = mean(value))
+
+temp_issuances <- issuance %>%
+  group_by(County, time) %>%
+  summarise(amount = mean(value))
+
+a <- ggplot(data = temp_contacts, aes(time, amount, group = County, color = County)) +  
+  scale_colour_brewer(palette = 'Set1') +
+  geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
+  ggtitle('')  + xlab('') + ylab('') + ylim(200, 1000) +
+  theme(axis.text.x  = element_text(size = 7, colour = 'black'),
+        axis.text.y = element_text(size = 12, colour = 'black'),
+        axis.title.y = element_text(size = 12)) + theme_hc()
+
+b <- ggplot(data = temp_issuances, aes(time, amount, group = County, color = County)) +  
+  scale_colour_brewer(palette = 'Set1') +
+  geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
+  ggtitle('') + xlab('') + ylab('') + ylim(200, 1000) +
+  theme(axis.text.x  = element_text(size = 8, colour = 'black'),
+        axis.text.y = element_text(size = 12, colour = 'black'),
+        axis.title.y = element_text(size = 12)) + theme_hc()
+
+# plot side by side
+multiplot(a, b, cols = 2)
+
+```
+
+
+
+
+```{r, fig.cap= 'Right: Percent of WIC eligible 2 or more high risk nurtrition education contacts. Left: Percent of WIC eligible 2 or more Issuances.}
+#Join high_risk3 and particpation from ffy_2015_1
+names(ffy_2015_1)[1] <- 'agency_name'
+
+# Recode alachua  
+ffy_2015_1$agency_name <- ifelse(ffy_2015_1$agency_name == '*Alachua', 'ALACHUA', ffy_2015_1$agency_name)
+
+# make agency_name all uppercase 
+ffy_2015_1$agency_name <- toupper(ffy_2015_1$agency_name)
+
+# keep only those with date equal to 2015-08-15 (the latest date) to avoid duplicates
+temp <- ffy_2015_1[ffy_2015_1$date == '2015-08-15',]
+
+# keep only agency name and eligible 
+temp <- temp[, c("agency_name", "eligible")]
+
+# left join by agency_name
+new_high_risk <- left_join(high_risk3, temp)
+
+# make percent 
+new_high_risk$percent <- (new_high_risk$value/new_high_risk$eligible)*100 
+new_high_risk$percent <- round(new_high_risk$percent, 2)
+
+# make county indicator 
+new_high_risk$County <- ifelse(new_high_risk$agency_name == 'ALACHUA', 'Alachua', 'Other Counties')
+
+# subset high_risk into 2 NE contacts and issuances 
+contacts <- new_high_risk[high_risk3$class == '2 or more HR NE Contacts',]
+issuance <- new_high_risk[high_risk3$class == '2 or more Issuances',]
+
+# group by County for each one 
+temp_contacts <- contacts %>%
+  group_by(County, time) %>%
+  summarise(percent = mean(percent, na.rm = T))
+
+temp_issuances <- issuance %>%
+  group_by(County, time) %>%
+  summarise(percent = mean(percent, na.rm = T))
+
+a <- ggplot(data = temp_contacts, aes(time, percent, group = County, color = County)) +  
+  scale_colour_brewer(palette = 'Set1') +
+  geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
+  ggtitle('')  + xlab('') + ylab('Percent') +  ylim(0, 8) +
+  theme(axis.text.x  = element_text(size = 7, colour = 'black'),
+        axis.text.y = element_text(size = 12, colour = 'black'),
+        axis.title.y = element_text(size = 12)) + theme_hc()
+
+b <- ggplot(data = temp_issuances, aes(time, percent, group = County, color = County)) +  
+  scale_colour_brewer(palette = 'Set1') +
+  geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
+  ggtitle('') + xlab('') + ylab('Percent') + ylim(0, 8) +
+  theme(axis.text.x  = element_text(size = 8, colour = 'black'),
+        axis.text.y = element_text(size = 12, colour = 'black'),
+        axis.title.y = element_text(size = 12)) + theme_hc()
+
+# plot side by side
+multiplot(a, b, cols = 2)
+
+```
+
+
+
+```{r, fig.cap= 'Right: Number of 2 or more low risk nurtrition education contacts. Left: Number of 2 or more Issuances.'}
+
+# make county indicator 
+low_risk2$County <- ifelse(low_risk2$agency_name == 'ALACHUA', 'Alachua', 'Other Counties')
+
+# subset high_risk into 2 NE contacts and issuances 
+contacts <- low_risk2[low_risk2$class == '2 or more LR NE Contacts',]
+issuance <- low_risk2[low_risk2$class == '2 or more Issuances',]
+
+# group by County for each one 
+temp_contacts <- contacts %>%
+  group_by(County, time) %>%
+  summarise(amount = mean(value))
+
+temp_issuances <- issuance %>%
+  group_by(County, time) %>%
+  summarise(amount = mean(value))
+
+a <- ggplot(data = temp_contacts, aes(time, amount, group = County, color = County)) +  
+  scale_colour_brewer(palette = 'Set1') +
+  geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
+  ggtitle('')  + xlab('') + ylab('') + ylim(1000, 7000) +
+  theme(axis.text.x  = element_text(size = 7, colour = 'black'),
+        axis.text.y = element_text(size = 12, colour = 'black'),
+        axis.title.y = element_text(size = 12)) + theme_hc()
+
+b <- ggplot(data = temp_issuances, aes(time, amount, group = County, color = County)) +  
+  scale_colour_brewer(palette = 'Set1') +
+  geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
+  ggtitle('') + xlab('') + ylab('') + ylim(1000, 7000) +
+  theme(axis.text.x  = element_text(size = 8, colour = 'black'),
+        axis.text.y = element_text(size = 12, colour = 'black'),
+        axis.title.y = element_text(size = 12)) + theme_hc()
+
+# plot side by side
+multiplot(a, b, cols = 2)
+
+```
+
+
+
+
+```{r, fig.cap= 'Right: Percent of WIC eligible 2 or more high risk nurtrition education contacts. Left: Percent of WIC eligible 2 or more Issuances.}
+
+# left join by agency_name
+new_low_risk <- left_join(low_risk2, temp)
+
+# make percent
+new_low_risk$percent <- (new_low_risk$value/new_low_risk$eligible)*100 
+new_low_risk$percent <- round(new_low_risk$percent, 2)
+
+# make county indicator 
+new_low_risk$County <- ifelse(new_low_risk$agency_name == 'ALACHUA', 'Alachua', 'Other Counties')
+
+# subset high_risk into 2 NE contacts and issuances 
+contacts <- new_low_risk[high_risk3$class == '2 or more HR NE Contacts',]
+issuance <- new_low_risk[high_risk3$class == '2 or more Issuances',]
+
+# group by County for each one 
+temp_contacts <- contacts %>%
+  group_by(County, time) %>%
+  summarise(percent = mean(percent, na.rm = T))
+
+temp_issuances <- issuance %>%
+  group_by(County, time) %>%
+  summarise(percent = mean(percent, na.rm = T))
+
+a <- ggplot(data = temp_contacts, aes(time, percent, group = County, color = County)) +  
+  scale_colour_brewer(palette = 'Set1') +
+  geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
+  ggtitle('')  + xlab('') + ylab('Percent') +  ylim(0, 30) +
+  theme(axis.text.x  = element_text(size = 7, colour = 'black'),
+        axis.text.y = element_text(size = 12, colour = 'black'),
+        axis.title.y = element_text(size = 12)) + theme_hc()
+
+b <- ggplot(data = temp_issuances, aes(time, percent, group = County, color = County)) +  
+  scale_colour_brewer(palette = 'Set1') +
+  geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
+  ggtitle('') + xlab('') + ylab('Percent') + ylim(0, 30) +
+  theme(axis.text.x  = element_text(size = 8, colour = 'black'),
+        axis.text.y = element_text(size = 12, colour = 'black'),
+        axis.title.y = element_text(size = 12)) + theme_hc()
+
+# plot side by side
+multiplot(a, b, cols = 2)
+
+```

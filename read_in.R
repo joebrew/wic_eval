@@ -832,6 +832,15 @@ clean_high_2 <- function(x){
   x <- x[, c("county", "year", "quarter", "class", "value")]
   # drop state total row
   x <- x[which(x$county != 'State Total'),]
+  # make numeric
+  # recode 14 as 2014
+  x$year <- ifelse(x$year == '14', '2014', x$year)
+  # Combine year and quarter into a date object 
+  x$time <- paste0(x$year,  "-0", x$quarter)
+  x$time <- paste0(x$time, "-01")
+  # change to date time 
+  x$time <- as.Date(x$time, format = '%Y-%m-%d')
+  x$value <- as.numeric(x$value)
   return(x)
   
   
@@ -903,6 +912,16 @@ clean_high_3 <- function(x){
   x <- x[, c("agency_name", "year", "quarter", "class", "value")]
   # drop state total row
   x <- x[which(x$agency_name != 'STATE TOTAL'),]
+  # recode 14 as 2014
+  x$year <- ifelse(x$year == '14', '2014', x$year)
+  # Combine year and quarter into a date object 
+  x$time <- paste0(x$year,  "-0", x$quarter)
+  x$time <- paste0(x$time, "-01")
+  # change to date time 
+  x$time <- as.Date(x$time, format = '%Y-%m-%d')
+  # make numeric
+  x$value <- as.numeric(x$value)
+  
   
   return(x)
   
@@ -981,6 +1000,13 @@ clean_low_2 <- function(x){
   x <- x[, c("agency_name", "year", "quarter", "class", "value")]
   # drop state total row
   x <- x[which(x$agency_name != 'State Total'),]
+  x$year <- ifelse(x$year == '14', '2014', x$year)
+  # Combine year and quarter into a date object 
+  x$time <- paste0(x$year,  "-0", x$quarter)
+  x$time <- paste0(x$time, "-01")
+  # change to date time 
+  x$time <- as.Date(x$time, format = '%Y-%m-%d')
+  x$value <- as.numeric(x$value)
   
   return(x)
   
@@ -1103,6 +1129,21 @@ clean_over <- function(x){
   x <- x[, c("county","percent", "class_1", "class_2", "weight_status")]
   # rename columns
   names(x) <- c("county", "percent", "month", "year", "weight_status")
+  # fill blank space with 2014
+  x$year <- as.character(x$year)
+  x$month <- as.character(x$month)
+  x$percent <- as.numeric(x$percent)
+  x$year <- ifelse(x$year == 'Mar', '2014', x$year)
+  x$month <- ifelse(x$month == '', 'Mar', x$month)
+  # recode month into numbers 
+  x$month <- ifelse(x$month == 'Dec', '12', 
+                    ifelse(x$month == 'Jun', '06',
+                           ifelse(x$month == 'June', '06',
+                                  ifelse(x$month == 'Mar', '03', '09'))))
+  # put year month together and make date 
+  x$time <- paste0(x$year, '-', x$month, '-01')
+  # Make as date 
+  x$time <- as.Date(x$time, format = '%Y-%m-%d')
   
   return(x)
   
