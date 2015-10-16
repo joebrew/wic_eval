@@ -327,12 +327,18 @@ x$value <- as.numeric(x$value)
 x <- x[x$class == 'Percent clients certified in 1st trimester',]
 # recode 14 as 2014
 x$year <- ifelse(x$year == '14', '2014', x$year)
-# Combine year and quarter into a date object 
-x$time <- paste0(x$year,  "-0", x$quarter)
-x$time <- paste0(x$time, "-01")
-# change to date time 
-x$time <- as.Date(x$time, format = '%Y-%m-%d')
+# # Combine year and quarter into a date object 
+# x$time <- paste0(x$year,  "-0", x$quarter)
+# x$time <- paste0(x$time, "-01")
+# 
+# # change to date time 
+# x$time <- as.Date(x$time, format = '%Y-%m-%d')
   
+
+# Make year_quarter
+x$year_quarter <- paste0('Y', x$year,
+                         'Q', x$quarter)
+
   return(x)
 }
 

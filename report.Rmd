@@ -60,6 +60,7 @@ source('helpers.R')
 ## Notes on data source
 
 
+\newpage    
 
 # Participation 
 
@@ -85,7 +86,7 @@ temp <- ffy_2015_1 %>%
   summarise(per_mean = mean(percent, na.rm = T))
 
 # create color vector
-color <- ifelse(temp$County == 'Alachua', 'red', 'black')
+color <- ifelse(temp$County == 'Alachua', 'red', 'blue')
 
 # Create line graph 
 ggplot(data = temp, aes(date, per_mean, group = County, colour = County)) + 
@@ -114,7 +115,7 @@ for(i in 1:nrow(pre_entry1)){
 pre_entry1 <- arrange(pre_entry1, -percent)
 
 # Create color vector to identify alachua 
-color <- ifelse(pre_entry1$agency_name == 'Alachua', 'red', "black")
+color <- ifelse(pre_entry1$agency_name == 'Alachua', 'red', "blue")
 
 # create object that is percent for Alachua 
 per_alachua <- pre_entry1$percent[which(pre_entry1$agency == 'Alachua')]
@@ -131,7 +132,7 @@ bar <- ggplot(data = pre_entry1, aes(reorder(agency_name, -percent), percent)) +
         axis.title.y = element_text(size = 14)) + theme_hc()
 # historgram
 hist <- ggplot(data = pre_entry1, aes(percent)) + 
-  geom_histogram(binwidth = 3, fill = 'black', colour = 'grey', alpha = 0.7) + 
+  geom_histogram(binwidth = 3, fill = 'blue', colour = 'grey', alpha = 0.7) + 
   geom_vline(xintercept = per_alachua, colour = 'red') + 
   ylab('Count') + xlab('Percent') +
   ggtitle('') + 
@@ -158,7 +159,7 @@ temp <- first_tri_enroll1 %>%
   summarise(per_mean = mean(participation, na.rm = T))
 
 # create color vector
-color <- ifelse(temp$County == 'Alachua', 'red', 'black')
+color <- ifelse(temp$County == 'Alachua', 'red', 'blue')
 
 # Create line graph 
 ggplot(data = temp, aes(date, per_mean, group = County, colour = County)) + 
@@ -172,7 +173,7 @@ ggplot(data = temp, aes(date, per_mean, group = County, colour = County)) +
   
 ```
 
-```{r, fig.cap='Percent of prenatal women enrolling in WIC in the first trimester and certified during reporting by county'}
+```{r, fig.cap= 'Percent of prenatal women enrolling in WIC in the first trimester and certified during reporting by county'}
 ## VIZUALIZE PERCENT OF PRENATAL WOMEN ENROLLING IN WIC IN THE FIRST TRIMESTER AND CERTIFIED DURING REPORTING PERIOD USING first_tri_time1
 
 # create indicator for alachua 
@@ -180,25 +181,32 @@ first_tri_time1$County <- ifelse(first_tri_time1$county == 'Alachua', 'Alachua',
 
 # Group by indicator 
 temp <- first_tri_time1 %>%
-  group_by(County, time) %>%
+#   group_by(County, time) %>%
+    group_by(County, year_quarter) %>%
   summarise(per_mean = mean(value, na.rm = T))
 
 # create color vector
-color <- ifelse(temp$County == 'Alachua', 'red', 'black')
+color <- ifelse(temp$County == 'Alachua', 'red', 'blue')
 
-# create vector for quarter/year 
-quarter <- c("1st Quarter (2014)","2nd Quarter (2014)", "3rd Quarter (2014)" , "4th Quarter (2014)",
-             "1st Quarter (2015)", "2nd Quarter (2015)", "1st Quarter (2014)","2nd Quarter (2014)", 
-             "3rd Quarter (2014)" , "4th Quarter (2014)", "1st Quarter (2015)", "2nd Quarter (2015)")
+# # create vector for quarter/year 
+# quarter <- c("1st Quarter (2014)","2nd Quarter (2014)", "3rd Quarter (2014)" , "4th Quarter (2014)",
+#              "1st Quarter (2015)", "2nd Quarter (2015)", "1st Quarter (2014)","2nd Quarter (2014)", 
+#              "3rd Quarter (2014)" , "4th Quarter (2014)", "1st Quarter (2015)", "2nd Quarter (2015)")
+# 
+# # create vector of numbers
+# number <- c(1:12)
+# 
+# # bind them together 
+# temp <- cbind(temp, quarter, number)
 
-# create vector of numbers
-number <- c(1:12)
-
-# bind them together 
-temp <- cbind(temp, quarter, number)
+# Make the levels of the year_quarter ordered for plotting's purpose
+temp <- arrange(temp, year_quarter)
+temp$year_quarter <- factor(temp$year_quarter,
+                            levels = temp$year_quarter)
 
 # make line graph. the time column is year and quarter although it is formated as year, month, day. 
-ggplot(data = temp, aes(reorder(quarter,number), per_mean, group = County, colour = County)) + 
+# ggplot(data = temp, aes(reorder(quarter,number), per_mean, group = County, colour = County)) + 
+ggplot(data = temp, aes(x = year_quarter, y = per_mean, group = County, colour = County)) +
   scale_colour_brewer(palette = 'Set1') +
   geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
   ggtitle('') + 
@@ -210,12 +218,12 @@ ggplot(data = temp, aes(reorder(quarter,number), per_mean, group = County, colou
 
 ```
 
-  
-```
+\newpage
 
-## Breastfeeding 
 
-```{r, fig.cap= 'Left:Percent of all infants up to 12 months of age currently being breastfed by agency (06/30/2015). Right: Distribution of Percent of all infants up to 12 months of age currently being breastfed by agency. Both as of June 2015'}
+# Breastfeeding 
+
+```{r, fig.cap= 'Left: Percent of all infants up to 12 months of age currently being breastfed by agency. Right: Distribution of Percent of all infants up to 12 months of age currently being breastfed by agency. Both as of June 2015'}
 # VISUALIZE PERCENT OF ALL INFANTS UP TO 12 MONTHS OLD CURRENTLY BEING BF USING percent_bf_june 
 
 # Make percent 
@@ -226,7 +234,7 @@ percent_bf1_june$percent <- round(percent_bf1_june$percent, 2)
 percent_bf1_june <- arrange(percent_bf1_june, -percent)
 
 # Create color vector to identify alachua 
-color <- ifelse(percent_bf1_june$agency_name == 'Alachua', 'red', "black")
+color <- ifelse(percent_bf1_june$agency_name == 'Alachua', 'red', "blue")
 
 # create object that is percent for Alachua 
 per_alachua <- percent_bf1_june$percent[which(percent_bf1_june$agency == 'Alachua')]
@@ -243,7 +251,7 @@ bar <- ggplot(data = percent_bf1_june, aes(reorder(agency_name, -percent), perce
         axis.title.y = element_text(size = 14)) + theme_hc()
 # historgram
 hist <- ggplot(data = percent_bf1_june, aes(percent)) + 
-  geom_histogram(binwidth = 3, fill = 'black', colour = 'grey', alpha = 0.7) + 
+  geom_histogram(binwidth = 3, fill = 'blue', colour = 'grey', alpha = 0.7) + 
   geom_vline(xintercept = per_alachua, colour = 'red') + 
   ylab('Counts') + xlab('Percent') +
   ggtitle('') + 
@@ -257,7 +265,7 @@ multiplot(bar, hist, cols = 2)
 
 ```
 
-```{r, fig.cap= 'Left: Percent of infants and children under 24 months  ever breasted by WIC moms by agency. Right: Distribution of infants and children under 24 months  ever breasted by WIC moms by agency. Both as of June 2015.'}
+```{r, fig.cap= 'Left: Percent of infants and children under 24 months ever breastfed by WIC moms by agency. Right: Distribution of infants and children under 24 months  ever breastfed by WIC moms by agency. Both as of June 2015.'}
 # VISUALIZE PERCENT OF INFANTS AND CHILDREN UNDER 24 MONTHS EVER BF USING ever_bf1
 
 # Make percent
@@ -268,7 +276,7 @@ ever_bf1$percent <- round(ever_bf1$percent, 2)
 ever_bf1 <- arrange(ever_bf1, -percent)
 
 # Create color vector to identify alachua 
-color <- ifelse(ever_bf1$agency == 'Alachua', 'red', "black")
+color <- ifelse(ever_bf1$agency == 'Alachua', 'red', "blue")
 
 # create object that is percent for Alachua 
 per_alachua <- ever_bf1$percent[which(ever_bf1$agency == 'Alachua')]
@@ -286,7 +294,7 @@ bar <- ggplot(data = ever_bf1, aes(reorder(agency, -percent), percent)) +
 
 # Histogram of Percent 
 hist <- ggplot(data = ever_bf1, aes(percent)) + 
-  geom_histogram(binwidth = 3, fill = 'black', colour = 'grey', alpha = 0.7) + 
+  geom_histogram(binwidth = 3, fill = 'blue', colour = 'grey', alpha = 0.7) + 
   geom_vline(xintercept = per_alachua, colour = 'red') + 
   ylab('Counts') + xlab('Percent') +
   ggtitle('') + 
@@ -300,7 +308,7 @@ multiplot(bar, hist, cols = 2)
 ```
 
 
-```{r, fig.cap= 'Percent of infants and children under 24 months ever breasted by WIC moms by agency (2014 - 2015.'}
+```{r, fig.cap= 'Percent of infants and children under 24 months ever breastfed by WIC moms by agency (2014 - 2015.'}
 # Through time, use percent_ever 
 # First create and indicator for Alachua and group by indicator 
 percent_ever1$County <- ifelse(percent_ever1$agency_name == 'ALACHUA', 'Alachua', 'Other Counties')
@@ -334,7 +342,7 @@ infants_fed1_june$percent <- round(infants_fed1_june$percent, 2)
 infants_fed1_june <- arrange(infants_fed1_june, -percent)
 
 # Create color vector to identify alachua 
-color <- ifelse(infants_fed1_june$agency_name == 'Alachua', 'red', "black")
+color <- ifelse(infants_fed1_june$agency_name == 'Alachua', 'red', "blue")
 
 # create object that is percent for Alachua 
 per_alachua <- infants_fed1_june$percent[which(infants_fed1_june$agency_name == 'Alachua')]
@@ -352,7 +360,7 @@ bar <- ggplot(data = infants_fed1_june, aes(reorder(agency_name, -percent), perc
 
 # Histogram of Percent 
 hist <- ggplot(data = infants_fed1_june, aes(percent)) + 
-  geom_histogram(binwidth = 3, fill = 'black', colour = 'grey', alpha = 0.7) + 
+  geom_histogram(binwidth = 3, fill = 'blue', colour = 'grey', alpha = 0.7) + 
   geom_vline(xintercept = per_alachua, colour = 'red') + 
   ylab('Counts') + xlab('Percent') +
   ggtitle('') + 
@@ -398,7 +406,7 @@ infants_full1_june$percent <- round(infants_full1_june$percent, 2)
 infants_full1_june <- arrange(infants_full1_june, -percent)
 
 # Create color vector to identify alachua 
-color <- ifelse(infants_full1_june$agency_name == 'Alachua', 'red', "black")
+color <- ifelse(infants_full1_june$agency_name == 'Alachua', 'red', "blue")
 
 # create object that is percent for Alachua 
 per_alachua <- infants_full1_june$percent[which(infants_full1_june$agency_name == 'Alachua')]
@@ -416,7 +424,7 @@ bar <- ggplot(data = infants_full1_june, aes(reorder(agency_name, -percent), per
 
 # Histogram of Percent 
 hist <- ggplot(data = infants_full1_june, aes(percent)) + 
-  geom_histogram(binwidth = 3, fill = 'black', colour = 'grey', alpha = 0.7) + 
+  geom_histogram(binwidth = 3, fill = 'blue', colour = 'grey', alpha = 0.7) + 
   geom_vline(xintercept = per_alachua, colour = 'red') + 
   ylab('Counts') + xlab('Percent') +
   ggtitle('') + 
@@ -449,9 +457,8 @@ ggplot(data = temp, aes(date, per_avg, group = County, color = County)) +
         axis.title.y = element_text(size = 12)) + theme_hc()
 ```
 
-# non_hisp - Non-Hispanic Black Infants  and Children < 24 mos. old of WIC Moms Ever Breastfed by Agency
 
-```{r, fig.cap= 'Right:Percent of Non-Hispanic Black infants and children less than 24 months old that were ever breastfed by WIC moms. Left: Distribution of percent of Non-Hispanic Black infants and children less than 24 months old that were ever breastfed by WIC moms. Both as of June 2015.'}
+```{r, fig.cap= 'Right: Percent of Non-Hispanic Black infants and children less than 24 months old that were ever breastfed by WIC moms. Left: Distribution of percent of Non-Hispanic Black infants and children less than 24 months old that were ever breastfed by WIC moms. Both as of June 2015.'}
 
 # VISUALIZE PERCENT OF NON HISPANIC BLACK INFANTS AND CHILDREND UNDER 2 YEARS EVER BF
 
@@ -463,7 +470,7 @@ non_hisp1$percent <- round(non_hisp1$percent, 2)
 non_hisp1 <- arrange(non_hisp1, -percent)
 
 # Create color vector to identify alachua 
-color <- ifelse(non_hisp1$agency_name == 'Alachua', 'red', "black")
+color <- ifelse(non_hisp1$agency_name == 'Alachua', 'red', "blue")
 
 # create object that is percent for Alachua 
 per_alachua <- non_hisp1$percent[which(non_hisp1$agency_name == 'Alachua')]
@@ -481,7 +488,7 @@ bar <- ggplot(data = non_hisp1, aes(reorder(agency_name, -percent), percent)) +
 
 # Histogram of Percent 
 hist <- ggplot(data = non_hisp1, aes(percent)) + 
-  geom_histogram(binwidth = 3, fill = 'black', colour = 'grey', alpha = 0.7) + 
+  geom_histogram(binwidth = 3, fill = 'blue', colour = 'grey', alpha = 0.7) + 
   geom_vline(xintercept = per_alachua, colour = 'red') + 
   ylab('Counts') + xlab('Percent') +
   ggtitle('') + 
@@ -494,10 +501,9 @@ multiplot(bar, hist, cols = 2)
 
 ```
 
+\newpage
 
 # Healthy Weight and Obesity
-
-# healthy_weight - Percent of WIC children between 2 - 5 years of age having a Healthy Weight
 
 
 ```{r, fig.cap= 'Percent of WIC children between ages 2-5 having a healthy weight (2014-2015)'}
@@ -508,11 +514,19 @@ temp <- healthy_weight1 %>%
   group_by(County, date) %>%
   summarise(per_avg = mean(value, na.rm = T))
 
-ggplot(data = temp, aes(date, per_avg, group = County, color = County)) +  
+temp$Date <- format(temp$date, '%B\n%Y')
+
+# arrange temp by Date
+temp <- arrange(temp, date)
+
+# relevel temp$Date with the levels being the current order of that vector
+temp$Date <- factor(temp$Date, levels = temp$Date)
+
+ggplot(data = temp, aes(Date, per_avg, group = County, color = County)) +  
   scale_colour_brewer(palette = 'Set1') +
   geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
   ggtitle('') +
-  ylim(50, 80) + xlab('Date') + ylab('Percent') + 
+  ylim(50, 80) + xlab('') + ylab('Percent') + 
   theme(axis.text.x  = element_text(size = 10, colour = 'black'),
         axis.text.y = element_text(size = 12, colour = 'black'),
         axis.title.y = element_text(size = 12)) + theme_hc()
@@ -521,7 +535,7 @@ ggplot(data = temp, aes(date, per_avg, group = County, color = County)) +
 ```
 
 
-```{r, fig.cap= 'Right: Percent of children 2 years or younger that are obese by county. Left: Percent of children 2 years or younger that are overweight by county.'}
+```{r, fig.cap= 'Right: Percent of WIC children 2 years or younger that are obese by county. Left: Percent of WIC children 2 years or younger that are overweight by county.'}
 over_obese1$County <- ifelse(over_obese1$county == 'ALACHUA', 'Alachua', 'Other Counties')
 
 temp <- over_obese1 %>%
@@ -555,8 +569,11 @@ multiplot(a, b, cols = 2)
 
 ```
 
+\newpage
 
-```{r, fig.cap= 'Right: Number of 2 or more high risk nurtrition education contacts. Left: Number of 2 or more Issuances.'}
+# Nurtrition education contacts
+
+```{r, fig.cap= 'Right: Average number of 2 or more high risk nurtrition education contacts. Left: Average number of 2 or more Issuances.'}
 
 # make county indicator 
 high_risk3$County <- ifelse(high_risk3$agency_name == 'ALACHUA', 'Alachua', 'Other Counties')
@@ -598,7 +615,7 @@ multiplot(a, b, cols = 2)
 
 
 
-```{r, fig.cap= 'Right: Percent of WIC eligible 2 or more high risk nurtrition education contacts. Left: Percent of WIC eligible 2 or more Issuances.}
+```{r, fig.cap= 'Right: Percent of WIC eligible 2 or more high risk nurtrition education contacts. Left: Percent of WIC eligible 2 or more Issuances.'}
 #Join high_risk3 and particpation from ffy_2015_1
 names(ffy_2015_1)[1] <- 'agency_name'
 
@@ -660,7 +677,7 @@ multiplot(a, b, cols = 2)
 
 
 
-```{r, fig.cap= 'Right: Number of 2 or more low risk nurtrition education contacts. Left: Number of 2 or more Issuances.'}
+```{r, fig.cap= 'Right: Average number of 2 or more low risk nurtrition education contacts. Left: Average number of 2 or more Issuances.'}
 
 # make county indicator 
 low_risk2$County <- ifelse(low_risk2$agency_name == 'ALACHUA', 'Alachua', 'Other Counties')
@@ -702,7 +719,7 @@ multiplot(a, b, cols = 2)
 
 
 
-```{r, fig.cap= 'Right: Percent of WIC eligible 2 or more high risk nurtrition education contacts. Left: Percent of WIC eligible 2 or more Issuances.}
+```{r, fig.cap= 'Right: Percent of WIC eligible 2 or more high risk nurtrition education contacts. Left: Percent of WIC eligible 2 or more Issuances.'}
 
 # left join by agency_name
 new_low_risk <- left_join(low_risk2, temp)
