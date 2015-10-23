@@ -1,15 +1,11 @@
 ---
-fig_height: 2.6
-fig_width: 4
-highlight: zenburn
 title: "WIC Evaluation"
 author: "Ben and Joe Brew"
 date: "10/14/2015"
-tables: yes
-toc: yes
 output:
-  pdf_document:
-    fig_caption: true
+    html_document:
+      toc: true
+      theme: united
 ---
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, comment=NA, error=FALSE}
@@ -19,8 +15,20 @@ options(scipen=999)
 #packages
 library(knitr)
 
+# Create a hook for html captions
+knit_hooks$set(htmlcap = function(before, options, envir) {
+  if(!before) {
+    paste('<p class="caption">',
+          '<span style="font-size:0.6em">',
+          'Above figure: ',
+          options$htmlcap,
+          '</span>',
+          "</p>",
+          sep="")
+  }})
+
 # basic knitr options 
-opts_chunk$set(comment = NA, echo = FALSE, warning = FALSE, error = FALSE, message = FALSE)
+opts_chunk$set(comment = NA, echo = FALSE, warning = FALSE, error = FALSE, message = FALSE, fig.align = 'center')
 options(xtable.comment = FALSE)
 ```
 
@@ -57,15 +65,26 @@ source('helpers.R')
 
 ## Purpose of document
 
+This is a prototype report for the continuous evaluation of WIC services and related outcomes at the Florida Department of Health in Alachua County.  
+
 ## Notes on data source
+
+We do not currently have direct access to the raw data related to WIC services and outcomes.  Access has been requested.  Until granted, the only metrics available for analysis are those within this report, which are ingested manually from spreadsheets on the FDOH intranet and sharepoint sites.  
+
+Ideally, direct database server access will be granted.  This access will permit both (a) less manual data munging, (b) "live" reporting and (c) more granular analyses of the data.
+
+Given the current data access state, metrics are reported "as is".  This report is intentionally sparse in commentary, since our "methods" consisted primarily of visualizing the data in their available form (as opposed to generating potentially more relevant metrics ourselves).
 
 
 \newpage    
 
 # Participation 
 
+Participation appears to have declined sharply in Alachua agency facilities last fall, and has remained relatively stable (65-70%) since then.
 
-```{r, fig.cap= 'WIC Participation by agency'}
+
+
+```{r}
 
 # VISUALIZE OVERALL PARTICIPATION IN WIC BY AGENCY 
 # Make percent 
@@ -87,6 +106,53 @@ temp <- ffy_2015_1 %>%
 
 # create color vector
 color <- ifelse(temp$County == 'Alachua', 'red', 'blue')
+```
+
+
+```{r, htmlcap= 'WIC Participation by agency', fig.height = 3.5}
+par(mfrow = c(1,2))
+ffy_2015_1 <- arrange(ffy_2015_1, date)
+plot(ffy_2015_1$date, ffy_2015_1$percent, col = adjustcolor('black', alpha.f = 0.1), type = 'n',
+     xlab = 'Date',
+     ylab = 'Participation (% of eligibles)')
+for (i in unique(ffy_2015_1$agency)){
+  sub_data <- ffy_2015_1[ffy_2015_1$agency == i,]
+  lines(sub_data$date, sub_data$percent, col = adjustcolor('blue', alpha.f = 0.3))
+}
+sub_data <- ffy_2015_1[ffy_2015_1$agency == '*Alachua',]  
+lines(sub_data$date, sub_data$percent, col = adjustcolor('red', alpha.f = 0.6), lwd = 3)
+legend('topright', lty = 1,
+       col = adjustcolor(c('blue', 'red'), alpha.f = 0.4),
+       legend = c('Other counties', 'Alachua'))
+
+bp <- barplot(sub_data$percent, names.arg = sub_data$date, 
+              xlab = '', ylab = 'Percent', cex.names = 0.4,
+              col = adjustcolor('blue', alpha.f = 0.6),
+              border = NA,
+              las = 3,
+              ylim = c(0, max(sub_data$percent) * 1.15))
+text(x = bp[,1],
+     y = sub_data$percent,
+     col = adjustcolor('black', alpha.f = 0.4),
+     labels = sub_data$percent,
+     pos = 3,
+     cex = 0.3)
+par(mfrow = c(1,1))
+# ggplot(sub_data, aes(x = date, y = percent)) +
+#   geom_bar(stat = 'identity', color = 'red', alpha = 0.6) +
+#   xlab('Date') +
+#   ylab()
+#     theme(axis.text.x  = element_text(size = 12, colour = 'black'),
+#         axis.text.y = element_text(size = 12, colour = 'black'),
+#         axis.title.y = element_text(size = 12)) + theme_hc()
+
+```
+
+On average, other agencies' counties have remained in the mid 70s, though participation appears to have declined state-wide at the end of the summer.
+
+
+
+```{r, htmlcap= 'WIC Participation by agency (2)', fig.width = 5, fig.height = 3}
 
 # Create line graph 
 ggplot(data = temp, aes(date, per_mean, group = County, colour = County)) + 
@@ -101,8 +167,9 @@ ggplot(data = temp, aes(date, per_mean, group = County, colour = County)) +
 
 
 
+In regards to prenatal participation in WIC (as opposed to general participation), Alachua appears to be doing better, ranking in the top tercile for June pre-natal WIC enrollments.
 
-```{r, fig.cap='Left: Percent of prenatal women enrolling in WIC in the first trimester. Right: Distribution of percent of prenatal women enrolling in WIC in the first trimester. Both as of June 2015.'}
+```{r, htmlcap='Left: Percent of prenatal women enrolling in WIC in the first trimester. Right: Distribution of percent of prenatal women enrolling in WIC in the first trimester. Both as of June 2015.', fig.height = 3.5}
 # VISUALIZE PRENATAL ENROLLMENT IN FIRST TRIMESTER BY AGENCY 
 # make percent
 pre_entry1$percent <- NA
@@ -147,7 +214,10 @@ multiplot(bar, hist, cols = 2)
 
 
 
-```{r, fig.cap= 'Percent of all WIC prenatal enrollees certified for WIC during the first trimester'}
+Certifications in the first trimester largely follow statewide trends, but with a slight decline since the end of 2014 until now.
+
+
+```{r, htmlcap= 'Percent of all WIC prenatal enrollees certified for WIC during the first trimester'}
 # VISUALIZE PERCENT OF ALL WIC PRENATAL ENROLLEES USING first_tri_enroll
 
 # create indicator for alachua 
@@ -173,7 +243,11 @@ ggplot(data = temp, aes(date, per_mean, group = County, colour = County)) +
   
 ```
 
-```{r, fig.cap= 'Percent of prenatal women enrolling in WIC in the first trimester and certified during reporting by county'}
+\newpage
+
+At the county (as opposed to agency level), Alachua mirrors statewide trends (variability is likely due to smaller size, not erratic enrollment).
+
+```{r, htmlcap= 'Percent of prenatal women enrolling in WIC in the first trimester and certified during reporting by county', fig.width = 5, fig.height = 3}
 ## VIZUALIZE PERCENT OF PRENATAL WOMEN ENROLLING IN WIC IN THE FIRST TRIMESTER AND CERTIFIED DURING REPORTING PERIOD USING first_tri_time1
 
 # create indicator for alachua 
@@ -218,12 +292,16 @@ ggplot(data = temp, aes(x = year_quarter, y = per_mean, group = County, colour =
 
 ```
 
+
+
 \newpage
 
 
 # Breastfeeding 
 
-```{r, fig.cap= 'Left: Percent of all infants up to 12 months of age currently being breastfed by agency. Right: Distribution of Percent of all infants up to 12 months of age currently being breastfed by agency. Both as of June 2015'}
+Relative to other WIC agencies, Alachua's percentage of infants being breasfed is low - in the bottom quartile.  
+
+```{r, htmlcap= 'Left: Percent of all infants up to 12 months of age currently being breastfed by agency. Right: Distribution of Percent of all infants up to 12 months of age currently being breastfed by agency. Both as of June 2015', fig.height = 3.5}
 # VISUALIZE PERCENT OF ALL INFANTS UP TO 12 MONTHS OLD CURRENTLY BEING BF USING percent_bf_june 
 
 # Make percent 
@@ -265,7 +343,11 @@ multiplot(bar, hist, cols = 2)
 
 ```
 
-```{r, fig.cap= 'Left: Percent of infants and children under 24 months ever breastfed by WIC moms by agency. Right: Distribution of infants and children under 24 months  ever breastfed by WIC moms by agency. Both as of June 2015.'}
+The share of infants ever having been breastfed is also low.  
+
+
+
+```{r, htmlcap= 'Left: Percent of infants and children under 24 months ever breastfed by WIC moms by agency. Right: Distribution of infants and children under 24 months  ever breastfed by WIC moms by agency. Both as of June 2015.', fig.height = 3.5}
 # VISUALIZE PERCENT OF INFANTS AND CHILDREN UNDER 24 MONTHS EVER BF USING ever_bf1
 
 # Make percent
@@ -308,7 +390,11 @@ multiplot(bar, hist, cols = 2)
 ```
 
 
-```{r, fig.cap= 'Percent of infants and children under 24 months ever breastfed by WIC moms by agency (2014 - 2015.'}
+This trend remains largely unchanged over the last year.  
+
+
+
+```{r, htmlcap= 'Percent of infants and children under 24 months ever breastfed by WIC moms by agency (2014 - 2015.', fig.height = 3, fig.width = 5}
 # Through time, use percent_ever 
 # First create and indicator for Alachua and group by indicator 
 percent_ever1$County <- ifelse(percent_ever1$agency_name == 'ALACHUA', 'Alachua', 'Other Counties')
@@ -330,7 +416,12 @@ ggplot(data = temp, aes(date, per_avg, group = County, color = County)) +
 ```
 
 
-```{r, fig.cap= 'Left: Percent of infants that were ever breastfed for at least 26 weeks and at least 6 months of age. Right: Distribution of Percent of infants that were ever breastfed for at least 26 weeks and at least 6 months of age. Both as of June 2015.'}
+As with other breastfeeding metrics, the percentage of Alachua agency infants who are breastfed per the WHO's recommendations (6 months) is much lower than the state average.   
+
+
+
+
+```{r, htmlcap= 'Left: Percent of infants that were ever breastfed for at least 26 weeks and at least 6 months of age. Right: Distribution of Percent of infants that were ever breastfed for at least 26 weeks and at least 6 months of age. Both as of June 2015.', fig.height = 3.5}
 
 # VISUALIZE PERCENT OF INFANTS THAT WERE EVER BREASTFED FOR AT LEAST 26 WEEKS AND AT LEAST 6 MONTHS OF AGE USING infants_fed1_june
 
@@ -371,8 +462,12 @@ hist <- ggplot(data = infants_fed1_june, aes(percent)) +
 
 multiplot(bar, hist, cols = 2)
 ```
+   
+Little has changed in regards to the 6-month breastfeeding rate over the last year, though Alachua appears to be making steady progress in the period since January 2015.    
 
-```{r, fig.cap= 'Percent of infants at least 26 weeks old who have breastfed for at least 26 weeks by agency (2014-2015)'}
+
+
+```{r, htmlcap= 'Percent of infants at least 26 weeks old who have breastfed for at least 26 weeks by agency (2014-2015)', fig.height = 3, fig.width = 5}
 # VISUALIZE INFANTS AT LEAST 26 WEEKS OLD WHO HAVE BF FOR AT LEAST 26 WEEKS OVER TIME using infants_fed1
 
 # First create and indicator for Alachua and group by indicator 
@@ -394,9 +489,12 @@ ggplot(data = temp, aes(date, per_avg, group = County, color = County)) +
 
 ```
  
+In the distribution of 6 month breastfeeding rates, Alachua sits squarely in the middle.   
 
 
-```{r, fig.cap= 'Left: Percent of infants at least 6 months of age who have fully breasfed for at least 26 weeks. Right: Distribution of percent of infants at least 6 months of age who have fully breasfed for at least 26 weeks. Both as of June 2015'}
+
+
+```{r, htmlcap= 'Left: Percent of infants at least 6 months of age who have fully breasfed for at least 26 weeks. Right: Distribution of percent of infants at least 6 months of age who have fully breasfed for at least 26 weeks. Both as of June 2015', fig.height = 3.5}
 
 # Make percent
 infants_full1_june$percent <- (infants_full1_june$full_bf/infants_full1_june$ever_bf)*100 
@@ -436,9 +534,16 @@ hist <- ggplot(data = infants_full1_june, aes(percent)) +
 multiplot(bar, hist, cols = 2)
 
 ```
+  
+  
+  
+Oddly, FDOH has multiple data sources on the 6 month breastfeeding metric (intranet vs sharepoint).  Though similar, the data are slightly different depending on the source:   
 
 
-```{r, fig.cap= 'Percent of infants at least 6 months of age who have fully breasfed for at least 26 weeks (2014-2015)'}
+
+
+
+```{r, htmlcap= 'Percent of infants at least 6 months of age who have fully breasfed for at least 26 weeks (2014-2015)', fig.height = 3, fig.width = 5}
 
 # VISUALIZE INFANTS AT LEAST 26 WEEKS OLD FULLY BREASTFED FOR AT LEAST 26 WEEKS BY AGENCY 
 infants_full2$County <- ifelse(infants_full2$agency_name == 'Alachua', 'Alachua', 'Other Counties')
@@ -458,7 +563,7 @@ ggplot(data = temp, aes(date, per_avg, group = County, color = County)) +
 ```
 
 
-```{r, fig.cap= 'Right: Percent of Non-Hispanic Black infants and children less than 24 months old that were ever breastfed by WIC moms. Left: Distribution of percent of Non-Hispanic Black infants and children less than 24 months old that were ever breastfed by WIC moms. Both as of June 2015.'}
+```{r, htmlcap= 'Right: Percent of Non-Hispanic Black infants and children less than 24 months old that were ever breastfed by WIC moms. Left: Distribution of percent of Non-Hispanic Black infants and children less than 24 months old that were ever breastfed by WIC moms. Both as of June 2015.', fig.height = 3.5}
 
 # VISUALIZE PERCENT OF NON HISPANIC BLACK INFANTS AND CHILDREND UNDER 2 YEARS EVER BF
 
@@ -501,12 +606,17 @@ multiplot(bar, hist, cols = 2)
 
 ```
 
+
 \newpage
 
 # Healthy Weight and Obesity
 
+The percent of WIC children ages 2-5 who have a helghty weight is slightly lower in Alachua than in other counties, with a mostly flat trend.   
 
-```{r, fig.cap= 'Percent of WIC children between ages 2-5 having a healthy weight (2014-2015)'}
+
+
+
+```{r, htmlcap= 'Percent of WIC children between ages 2-5 having a healthy weight (2014-2015)', fig.width = 5, fig.height = 3}
 # VISUALIZE PERCENT OF WIC CHILDREN 2-5 WITH HEALTHY WEIGHT 
 healthy_weight1$County <- ifelse(healthy_weight1$agency == 'Alachua', 'Alachua', 'Other Counties')
 
@@ -534,8 +644,12 @@ ggplot(data = temp, aes(Date, per_avg, group = County, color = County)) +
 
 ```
 
+Oddly, and again showing irregularities by data source, the percent of Alachuan 2-5 WIC children who are obese appears to be significantly _lower_ than in other counties (left), while the percentage of Alachua 2-5 WIC children who are overweight also appears to be slightly _lower_.  This is an incoherent finding, given that Alachua's "healthy weight" rate is below average.    
 
-```{r, fig.cap= 'Right: Percent of WIC children 2 years or younger that are obese by county. Left: Percent of WIC children 2 years or younger that are overweight by county.'}
+
+
+
+```{r, htmlcap= 'Right: Percent of WIC children 2 years or younger that are obese by county. Left: Percent of WIC children 2 years or younger that are overweight by county.', fig.height = 3.5}
 over_obese1$County <- ifelse(over_obese1$county == 'ALACHUA', 'Alachua', 'Other Counties')
 
 temp <- over_obese1 %>%
@@ -550,7 +664,7 @@ a <- ggplot(data = obese, aes(time, per_avg, group = County, color = County)) +
   scale_colour_brewer(palette = 'Set1') +
   geom_line(stat = 'identity', size = 2, alpha = 0.7) + 
   ggtitle('') +
-  ylim(0, 50) + xlab('') + ylab('Percent') + 
+  ylim(0, 20) + xlab('') + ylab('Percent') + 
   theme(axis.text.x  = element_text(size = 7, colour = 'black'),
         axis.text.y = element_text(size = 12, colour = 'black'),
         axis.title.y = element_text(size = 12)) + theme_hc()
@@ -573,7 +687,11 @@ multiplot(a, b, cols = 2)
 
 # Nurtrition education contacts
 
-```{r, fig.cap= 'Right: Average number of 2 or more high risk nurtrition education contacts. Left: Average number of 2 or more Issuances.'}
+Frankly, we don't know what these are, so we report them as is.  Left: high-risk issuances; Right: high-risk contacts.   
+
+
+
+```{r, htmlcap= 'Right: Average number of 2 or more high risk nurtrition education contacts. Left: Average number of 2 or more Issuances.', fig.height = 3.5}
 
 # make county indicator 
 high_risk3$County <- ifelse(high_risk3$agency_name == 'ALACHUA', 'Alachua', 'Other Counties')
@@ -613,9 +731,12 @@ multiplot(a, b, cols = 2)
 ```
 
 
+The below again shows issuances (left) and contacts (right), but this time among WIC eligibles (not just high-risk).   
 
 
-```{r, fig.cap= 'Right: Percent of WIC eligible 2 or more high risk nurtrition education contacts. Left: Percent of WIC eligible 2 or more Issuances.'}
+
+
+```{r, htmlcap= 'Right: Percent of WIC eligible 2 or more nurtrition education contacts. Left: Percent of WIC eligible 2 or more Issuances.', fig.height = 3.5}
 #Join high_risk3 and particpation from ffy_2015_1
 names(ffy_2015_1)[1] <- 'agency_name'
 
@@ -675,9 +796,11 @@ multiplot(a, b, cols = 2)
 
 ```
 
+The below again shows issuances (left) and contacts (right) among the low risk population.   
 
 
-```{r, fig.cap= 'Right: Average number of 2 or more low risk nurtrition education contacts. Left: Average number of 2 or more Issuances.'}
+
+```{r, htmlcap= 'Right: Average number of 2 or more low risk nurtrition education contacts. Left: Average number of 2 or more Issuances.', fig.height = 3.5}
 
 # make county indicator 
 low_risk2$County <- ifelse(low_risk2$agency_name == 'ALACHUA', 'Alachua', 'Other Counties')
@@ -717,9 +840,12 @@ multiplot(a, b, cols = 2)
 ```
 
 
+The below shows _multiple_ (2 or more) issuances (left) and contacts (right) among the high-risk population.   
 
 
-```{r, fig.cap= 'Right: Percent of WIC eligible 2 or more high risk nurtrition education contacts. Left: Percent of WIC eligible 2 or more Issuances.'}
+
+
+```{r, htmlcap= 'Right: Percent of WIC eligible 2 or more high risk nurtrition education contacts. Left: Percent of WIC eligible 2 or more Issuances.', fig.height = 3.5}
 
 # left join by agency_name
 new_low_risk <- left_join(low_risk2, temp)

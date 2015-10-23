@@ -269,7 +269,7 @@ clean_tri_1 <- function(x){
         }
       } 
     }
-   
+    
     # Fix column indicator for last column
     column_indicator <- ifelse(column_indicator > ncol(x),
                                ncol(x)-1, column_indicator)
@@ -301,44 +301,44 @@ clean_tri_1 <- function(x){
     # Stick that column name where it belongs
     names(x)[j] <- column_name
   }
-# remove first 3 rows 
-x <- x[4:nrow(x),]
-# gather
-x <- gather(x, key, value, 2:ncol(x))
-# strsplit the key on underscore creating year, quarter and description columns 
-list <- strsplit(as.character(x$key), '_')
-# turn list into data table object
-temp <- ldply(list)
-# make column names
-colnames(temp) <- c("year", "quarter", "class")
-# put back into x
-x <- cbind(x, temp)
-# remove extra columns in x 
-x <- x[, c("county", "year", "quarter", "class", "value")]
-# remove state 
-x <- x[x$county != 'State',]
-# remove if "As of"
-x <- x[!grepl("As of", x$county),]
-# clean county column 
-x$county <- gsub("\\s+", "", x$county)
-# make as numeric
-x$value <- as.numeric(x$value)
-# Keep only percent 
-x <- x[x$class == 'Percent clients certified in 1st trimester',]
-# recode 14 as 2014
-x$year <- ifelse(x$year == '14', '2014', x$year)
-# # Combine year and quarter into a date object 
-# x$time <- paste0(x$year,  "-0", x$quarter)
-# x$time <- paste0(x$time, "-01")
-# 
-# # change to date time 
-# x$time <- as.Date(x$time, format = '%Y-%m-%d')
+  # remove first 3 rows 
+  x <- x[4:nrow(x),]
+  # gather
+  x <- gather(x, key, value, 2:ncol(x))
+  # strsplit the key on underscore creating year, quarter and description columns 
+  list <- strsplit(as.character(x$key), '_')
+  # turn list into data table object
+  temp <- ldply(list)
+  # make column names
+  colnames(temp) <- c("year", "quarter", "class")
+  # put back into x
+  x <- cbind(x, temp)
+  # remove extra columns in x 
+  x <- x[, c("county", "year", "quarter", "class", "value")]
+  # remove state 
+  x <- x[x$county != 'State',]
+  # remove if "As of"
+  x <- x[!grepl("As of", x$county),]
+  # clean county column 
+  x$county <- gsub("\\s+", "", x$county)
+  # make as numeric
+  x$value <- as.numeric(x$value)
+  # Keep only percent 
+  x <- x[x$class == 'Percent clients certified in 1st trimester',]
+  # recode 14 as 2014
+  x$year <- ifelse(x$year == '14', '2014', x$year)
+  # # Combine year and quarter into a date object 
+  # x$time <- paste0(x$year,  "-0", x$quarter)
+  # x$time <- paste0(x$time, "-01")
+  # 
+  # # change to date time 
+  # x$time <- as.Date(x$time, format = '%Y-%m-%d')
   
-
-# Make year_quarter
-x$year_quarter <- paste0('Y', x$year,
-                         'Q', x$quarter)
-
+  
+  # Make year_quarter
+  x$year_quarter <- paste0('Y', x$year,
+                           'Q', x$quarter)
+  
   return(x)
 }
 
@@ -1124,6 +1124,7 @@ clean_over <- function(x){
   # gather x 
   x <- gather(x, class, percent, 2:ncol(x))
   # split class to separate date 
+  x <- data.frame(x)
   x <- cSplit(x, "class", "_", fixed = FALSE)
   x <- as.data.frame(x)
   # fill class_7 NAS with 0
